@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Chef — AI Culinary Assistant</title>
+<!-- Material Symbols for A2UI components -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined&display=swap">
+<style>
+  :root {
+    --accent: #ea580c;
+    --accent-hover: #c2410c;
+    --accent-light: #fff7ed;
+    --accent-border: #fdba74;
+    --bg: #faf9f6;
+    --card-bg: #ffffff;
+    --border: #e7e5e4;
+    --text-primary: #1c1917;
+    --text-muted: #78716c;
+    --header-bg: linear-gradient(135deg, #2e1005 0%, #7c2d12 50%, #ea580c 100%);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    color: var(--text-primary);
+  }
+  header {
+    background: var(--header-bg);
+    color: #fff;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    z-index: 10;
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .header-icon {
+    font-size: 1.6rem;
+    background: rgba(255,255,255,0.15);
+    padding: 0.4rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .header-title {
+    font-weight: 700;
+    font-size: 1.2rem;
+    line-height: 1.2;
+  }
+  .header-subtitle {
+    font-size: 0.8rem;
+    opacity: 0.85;
+    font-weight: 400;
+  }
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    background: rgba(255,255,255,0.12);
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #22c55e;
+  }
+
+  #main-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 860px;
+    width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  #log {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .welcome-banner {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    margin-bottom: 0.5rem;
+  }
+  .welcome-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  .welcome-title { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; }
+  .welcome-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.45; max-width: 500px; margin: 0 auto; }
+
+  .msg-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .msg-row.user {
+    flex-direction: row-reverse;
+  }
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .msg-row.agent .avatar {
+    background: #ffedd5;
+    border: 1px solid #fed7aa;
+  }
+  .msg-row.user .avatar {
+    background: #ea580c;
+    color: #fff;
+  }
+
+  .bubble-wrapper {
+    max-width: 85%;
+    display: flex;
+    flex-direction: column;
+  }
+  .bubble {
+    padding: 0.8rem 1.1rem;
+    border-radius: 16px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    white-space: pre-wrap;
+  }
+  .msg-row.user .bubble {
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 2px 8px rgba(234,88,12,0.2);
+  }
+  .msg-row.agent .bubble {
+    border-bottom-left-radius: 4px;
+  }
+  .bubble.rich {
+    background: transparent;
+    border: none;
+    padding: 0;
+    max-width: 100%;
+    white-space: normal;
+    box-shadow: none;
+  }
+
+  /* Example Prompts Row */
+  #suggestions {
+    display: flex;
+    gap: 0.6rem;
+    padding: 0.6rem 1.25rem;
+    overflow-x: auto;
+    background: var(--bg);
+    border-top: 1px solid rgba(0,0,0,0.04);
+  }
+  .chip {
+    background: #ffffff;
+    border: 1px solid var(--accent-border);
+    color: var(--accent-hover);
+    padding: 0.55rem 0.95rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: inherit;
+  }
+  .chip:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(234,88,12,0.15);
+  }
+
+  /* Form & Input */
+  form {
+    display: flex;
+    gap: 0.6rem;
+    padding: 1rem 1.25rem;
+    background: #ffffff;
+    border-top: 1px solid var(--border);
+  }
+  input {
+    flex: 1;
+    padding: 0.8rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+  }
+  input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(234,88,12,0.15);
+  }
+  button {
+    padding: 0.8rem 1.4rem;
+    border: none;
+    border-radius: 12px;
+    background: var(--accent);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: inherit;
+  }
+  button:hover {
+    background: var(--accent-hover);
+  }
+  button:active {
+    transform: scale(0.98);
+  }
+
+  /* A2UI Component Styles */
+  .a2card { border:1px solid var(--border); border-radius:14px; padding:1.1rem; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.05); max-width:100%; }
+  .a2card + .a2card, .a2col > .a2card { margin-top:.6rem; }
+  .a2col { display:flex; flex-direction:column; gap:.5rem; }
+  .a2row { display:flex; flex-direction:row; gap:.6rem; align-items:center; flex-wrap:wrap; }
+  .a2row.between { justify-content:space-between; }
+  .a2text { margin:0; line-height:1.45; }
+  .a2text.a2-h1 { font-size:1.4rem; font-weight:700; color:var(--text-primary); }
+  .a2text.a2-h2 { font-size:1.2rem; font-weight:700; color:var(--text-primary); }
+  .a2text.a2-h3 { font-size:1.05rem; font-weight:600; color:var(--text-primary); }
+  .a2text.a2-h4 { font-size:0.95rem; font-weight:600; color:var(--text-primary); }
+  .a2text.a2-caption { font-size:.85rem; color:var(--text-muted); }
+  .a2divider { border:none; border-top:1px solid var(--border); margin:.5rem 0; width:100%; }
+  .a2img { max-width:100%; border-radius:10px; display:block; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
+  .material-symbols-outlined { font-family:'Material Symbols Outlined'; font-size:1.25rem; line-height:1; vertical-align:middle; color:var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-brand">
+    <div class="header-icon">👨‍🍳</div>
+    <div>
+      <div class="header-title">Smart Chef</div>
+      <div class="header-subtitle">AI Culinary & Pantry Assistant</div>
+    </div>
+  </div>
+  <div class="status-badge">
+    <span class="status-dot"></span>
+    <span>Online</span>
+  </div>
+</header>
+
+<div id="main-container">
+  <div id="log">
+    <div class="welcome-banner" id="welcome-banner">
+      <div class="welcome-icon">🍽️</div>
+      <div class="welcome-title">Welcome to Smart Chef</div>
+      <div class="welcome-desc">Plan meals, check pantry items, discover recipes, and find local grocery stores with AI assistance.</div>
+    </div>
+  </div>
+
+  <div id="suggestions">
+    <button class="chip" type="button" data-prompt="🥦 Check my pantry inventory for meal ideas">
+      <span>🥦</span> Check pantry inventory
+    </button>
+    <button class="chip" type="button" data-prompt="🍝 Search online for pasta recipes and photo">
+      <span>🍝</span> Search pasta recipes
+    </button>
+    <button class="chip" type="button" data-prompt="🛒 Find nearby grocery stores">
+      <span>🛒</span> Find nearby stores
+    </button>
+  </div>
+
+  <form id="form">
+    <input id="input" placeholder="Ask Smart Chef for recipes, pantry updates, or nearby stores..." autocomplete="off" autofocus>
+    <button type="submit">
+      <span>Send</span>
+      <span style="font-size:1.1rem; line-height:1;">➔</span>
+    </button>
+  </form>
+</div>
+
+<script>
+const log = document.getElementById("log");
+const form = document.getElementById("form");
+const input = document.getElementById("input");
+
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+function bubble(who) {
+  const welcome = document.getElementById("welcome-banner");
+  if (welcome) welcome.style.display = "none";
+
+  const row = el("div", "msg-row " + who);
+  const avatar = el("div", "avatar", who === "user" ? "👤" : "👨‍🍳");
+  const wrapper = el("div", "bubble-wrapper");
+  const b = el("div", "bubble");
+
+  wrapper.appendChild(b);
+  row.appendChild(avatar);
+  row.appendChild(wrapper);
+  log.appendChild(row);
+  log.scrollTop = log.scrollHeight;
+  return b;
+}
+
+// Click handler for suggestion chips
+document.querySelectorAll(".chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    const prompt = chip.getAttribute("data-prompt");
+    if (prompt) {
+      input.value = prompt;
+      form.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+    }
+  });
+});
+
+/* ----------------------------------------------------------------------------
+ * A2UI mini-renderer (v0.8 Basic Catalog subset).
+ * Renders Card / Column / Row / Text / Divider / List / Image / Icon.
+ * Anything else falls back to plain text (see renderReply).
+ * -------------------------------------------------------------------------- */
+
+function boundStr(v) {
+  if (v == null) return "";
+  if (typeof v === "string") return v;
+  if (typeof v.literalString === "string") return v.literalString;
+  return "";
+}
+
+function childIds(props) {
+  const ids = [];
+  if (props && typeof props.child === "string") ids.push(props.child);
+  const ch = props && props.children;
+  if (ch && Array.isArray(ch.explicitList)) for (const c of ch.explicitList) if (typeof c === "string") ids.push(c);
+  return ids;
+}
+
+function iconName(n) { return String(n || "").replace(/([a-z0-9])([A-Z])/g, "$1_$2").replace(/\s+/g, "_").toLowerCase(); }
+
+function buildNode(id, comps, seen) {
+  if (!id || seen.has(id)) return null;
+  seen.add(id);
+  const spec = comps[id];
+  if (!spec || typeof spec !== "object") return null;
+  const type = Object.keys(spec)[0];
+  const props = spec[type] || {};
+  const kids = () => childIds(props).map(cid => buildNode(cid, comps, seen)).filter(Boolean);
+
+  switch (type) {
+    case "Card": {
+      const d = el("div", "a2card"); kids().forEach(n => d.appendChild(n)); return d;
+    }
+    case "Column":
+    case "List": {
+      const horizontal = type === "List" && props.direction === "horizontal";
+      const d = el("div", horizontal ? "a2row" : "a2col"); kids().forEach(n => d.appendChild(n)); return d;
+    }
+    case "Row": {
+      const d = el("div", "a2row" + (props.distribution === "spaceBetween" ? " between" : ""));
+      kids().forEach(n => d.appendChild(n)); return d;
+    }
+    case "Text": {
+      const t = el("div", "a2text");
+      const hint = String(props.usageHint || "body").toLowerCase();
+      if (["h1", "h2", "h3", "h4", "h5", "h6"].includes(hint)) t.classList.add("a2-" + hint);
+      else if (hint === "caption") t.classList.add("a2-caption");
+      t.textContent = boundStr(props.text);
+      return t;
+    }
+    case "Divider":
+      return el("hr", "a2divider");
+    case "Image": {
+      const src = boundStr(props.url || props.src);
+      if (!/^https?:\/\//i.test(src)) return null;
+      const img = el("img", "a2img"); img.src = src; img.alt = boundStr(props.alt) || ""; return img;
+    }
+    case "Icon": {
+      const s = el("span", "material-symbols-outlined"); s.textContent = iconName(boundStr(props.name) || props.name); return s;
+    }
+    default:
+      return null;
+  }
+}
+
+function renderSurface(messages, container) {
+  const comps = {};
+  const roots = [];
+  for (const m of messages) {
+    if (m.beginRendering && typeof m.beginRendering.root === "string") roots.push(m.beginRendering.root);
+    const su = m.surfaceUpdate;
+    if (su && Array.isArray(su.components)) for (const c of su.components) if (c && c.id && c.component) comps[c.id] = c.component;
+  }
+  let rootIds = roots.filter(r => comps[r]);
+  if (rootIds.length === 0) {
+    const referenced = new Set();
+    for (const id in comps) { const spec = comps[id]; childIds(spec[Object.keys(spec)[0]] || {}).forEach(c => referenced.add(c)); }
+    rootIds = Object.keys(comps).filter(id => !referenced.has(id));
+  }
+  let drew = false;
+  for (const rid of rootIds) { const node = buildNode(rid, comps, new Set()); if (node) { container.appendChild(node); drew = true; } }
+  return drew;
+}
+
+function flattenText(messages) {
+  const out = [];
+  for (const m of messages) {
+    const su = m.surfaceUpdate;
+    if (su && Array.isArray(su.components)) for (const c of su.components) if (c && c.component && c.component.Text) out.push(boundStr(c.component.Text.text));
+  }
+  return out.join("\n").trim();
+}
+
+function renderReply(b, parts) {
+  b.textContent = "";
+  const texts = parts.filter(p => p && (p.kind === "text" || (!p.kind && p.text))).map(p => p.text || "");
+  const a2ui = parts.filter(p => p && p.kind === "a2ui" && p.data).map(p => p.data);
+
+  const textStr = texts.join("\n").trim();
+  if (textStr) b.appendChild(el("div", null, textStr));
+
+  if (a2ui.length) {
+    b.classList.add("rich");
+    if (!renderSurface(a2ui, b)) b.appendChild(el("div", null, flattenText(a2ui) || "(no card content)"));
+  }
+  if (!b.childNodes.length) b.textContent = "(no response)";
+  log.scrollTop = log.scrollHeight;
+}
+
+form.addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+  bubble("user").textContent = text;
+  input.value = "";
+  const b = bubble("agent"); b.textContent = "…";
+  try {
+    const res = await fetch("/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text }) });
+    const raw = await res.text();
+    let data;
+    try { data = JSON.parse(raw); }
+    catch { throw new Error(`Server returned non-JSON (HTTP ${res.status}). ${raw.slice(0, 300)}`); }
+    renderReply(b, data.parts || []);
+  } catch (e) {
+    b.textContent = "Error: " + e.message;
+  }
+});
+</script>
+</body>
+</html>
