@@ -1,4 +1,4 @@
-# Smart Chef — AI Culinary & Meal Planning Assistant
+# Smart Chef - AI Culinary & Meal Planning Assistant
 
 Smart Chef is an intelligent, multi-tool AI assistant built with Google's **Agent Development Kit (ADK)** and powered by **Gemini 2.5 Flash**. Smart Chef helps users discover recipes, manage pantry inventory, respect strict food allergies, locate nearby grocery stores, and generate rich media (AI photos, SVG visuals, and culinary videos).
 
